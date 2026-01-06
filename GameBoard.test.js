@@ -1,11 +1,15 @@
 import gameBoard from './GameBoard';
-
-//const newBoard = new gameBoard();
+import ship from './Ship.js';
 
 describe('Ship Placement', () => {
+  let newBoard;
+
+  beforeEach(() => {
+    newBoard = new gameBoard();
+  });
+
   test('Place Ship Vertically', () => {
-    const newBoard = new gameBoard();
-    expect(newBoard.placeShip([0, 0], 'vertical', 3, 'Carrier')).toEqual([
+    expect(newBoard.placeShip([0, 0], 'vertical', new ship(3))).toEqual([
       [0, 0],
       [1, 0],
       [2, 0],
@@ -13,8 +17,7 @@ describe('Ship Placement', () => {
   });
 
   test('Place Ship Horizontally', () => {
-    const newBoard = new gameBoard();
-    expect(newBoard.placeShip([0, 0], 'horizontal', 3, 'Carrier')).toEqual([
+    expect(newBoard.placeShip([0, 0], 'horizontal', new ship(3))).toEqual([
       [0, 0],
       [0, 1],
       [0, 2],
@@ -23,26 +26,23 @@ describe('Ship Placement', () => {
 
   describe('Invalid Placement', () => {
     test('Placement out of bounds', () => {
-      const newBoard = new gameBoard();
       expect(() =>
-        newBoard.placeShip([10, 0], 'vertical', 3, 'Carrier')
+        newBoard.placeShip([10, 0], 'vertical', new ship(3))
       ).toThrow('Placement is out of bounds');
     });
 
     test('Ship is out of bounds', () => {
-      const newBoard = new gameBoard();
       expect(() =>
-        newBoard.placeShip([0, 8], 'horizontal', 3, 'Carrier')
+        newBoard.placeShip([0, 8], 'horizontal', new ship(3))
       ).toThrow('Ship is out of bounds');
     });
 
     test('Ship already there', () => {
-      const newBoard = new gameBoard();
-      newBoard.placeShip([0, 2], 'vertical', 3, 'Carrier');
+      newBoard.placeShip([0, 2], 'vertical', new ship(3));
       console.log(newBoard);
-      expect(() =>
-        newBoard.placeShip([1, 2], 'vertical', 4, 'Battleship')
-      ).toThrow('Ship already exists there');
+      expect(() => newBoard.placeShip([1, 2], 'vertical', new ship(4))).toThrow(
+        'Ship already exists there'
+      );
     });
   });
 });
