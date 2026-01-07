@@ -38,10 +38,32 @@ describe('Ship Placement', () => {
 
     test('Ship already there', () => {
       newBoard.placeShip([0, 2], 'vertical', 3);
-      console.log(newBoard);
       expect(() => newBoard.placeShip([1, 2], 'vertical', 4)).toThrow(
         'Ship already exists there'
       );
     });
+  });
+});
+
+describe('Attack Received', () => {
+  test('Is attack on the board', () => {
+    expect(() => newBoard.receiveAttack([10, 0])).toThrow(
+      'Attack not on the board'
+    );
+  });
+
+  test('Attack misses ship', () => {
+    expect(newBoard.receiveAttack([1, 2])).toEqual([1, 2]);
+  });
+
+  test('Attack hits ship', () => {
+    newBoard.placeShip([0, 2], 'vertical', 3);
+    expect(newBoard.receiveAttack([1, 2])).toEqual({ length: 3, hits: 1 });
+  });
+
+  test('Attack hits ship twice', () => {
+    newBoard.placeShip([0, 2], 'vertical', 3);
+    newBoard.receiveAttack([0, 2]);
+    expect(newBoard.receiveAttack([1, 2])).toEqual({ length: 3, hits: 2 });
   });
 });

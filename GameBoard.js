@@ -51,4 +51,18 @@ export default class GameBoard {
 
     return placedShip;
   };
+
+  receiveAttack = (coordinates) => {
+    const [row, col] = coordinates;
+    if (row > 9 || col > 9 || row < 0 || col < 0)
+      throw new Error('Attack not on the board');
+    if (this.board[row][col] === null) {
+      this.board[row][col] = 'x';
+      return coordinates;
+    } else {
+      let ship = this.board[row][col];
+      ship.hit();
+      return ship;
+    }
+  };
 }
