@@ -140,6 +140,11 @@ button:hover {
   aspect-ratio: 1/1;
 }
 
+.corner {
+  flex: 1;
+  aspect-ratio: 1 / 1;
+}
+
 #determine-player {
   background-color: var(--tertiary-color);
   border-radius: 10px;
@@ -175,6 +180,19 @@ header {
   display: flex;
   gap: 5px;
   align-items: center;
+}
+
+.label {
+  flex: 1;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.label-row .label {
+  border: none;
 }
 
 main {
@@ -216,4 +234,8 @@ main {
   display: flex;
   gap: 5px;
   flex: 1;
+}
+
+.row .label {
+  border: none;
 }
