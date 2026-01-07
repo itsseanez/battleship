@@ -1,4 +1,4 @@
-import gameBoard from './GameBoard';
+import gameBoard from '../src/GameBoard';
 
 let newBoard;
 

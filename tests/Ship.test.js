@@ -1,4 +1,4 @@
-import ship from './Ship';
+import ship from '../src/Ship';
 
 test('Ship hit', () => {
   let myShip = new ship(4);
