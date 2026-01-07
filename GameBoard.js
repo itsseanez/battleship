@@ -1,3 +1,5 @@
+import Ship from './Ship';
+
 export default class GameBoard {
   constructor() {
     this.board = this.#createBoard();
@@ -14,8 +16,9 @@ export default class GameBoard {
     return board;
   };
 
-  placeShip = (start, alignment, ship) => {
+  placeShip = (start, alignment, shipLength) => {
     const [row, col] = start;
+    const newShip = new Ship(shipLength);
 
     if (row < 0 || row > 9 || col < 0 || col > 9)
       throw new Error('Placement is out of bounds');
@@ -23,7 +26,7 @@ export default class GameBoard {
     const placedShip = [];
 
     // VALIDATION PHASE
-    for (let i = 0; i < ship.length; i++) {
+    for (let i = 0; i < shipLength; i++) {
       let r = row;
       let c = col;
 
@@ -43,7 +46,7 @@ export default class GameBoard {
 
     // MUTATION PHASE
     for (const [r, c] of placedShip) {
-      this.board[r][c] = ship;
+      this.board[r][c] = newShip;
     }
 
     return placedShip;
