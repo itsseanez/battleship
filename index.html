@@ -10,7 +10,24 @@
     <header>
       <h1>battleship.</h1>
     </header>
-    <main></main>
+    <main>
+      <div id="determine-player">
+        <div class="input-flex">
+          <p>Player 1:</p>
+          <input class="player-text" type="text" id="player-1-name" />
+        </div>
+        <p>Currently you are against the Computer.</p>
+        <div class="input-flex">
+          <p>Do you want to play against another Player?</p>
+          <div class="checkbox-wrapper-7">
+            <input class="tgl tgl-ios" id="cb2-7" type="checkbox" />
+            <label class="tgl-btn" for="cb2-7"></label>
+          </div>
+        </div>
+        <div id="player-2" class="input-flex"></div>
+        <button>PLAY</button>
+      </div>
+    </main>
     <script type="module" src="./src/index.js"></script>
   </body>
 </html>
