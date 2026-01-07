@@ -39,35 +39,38 @@ const battleship = (() => {
     gameDiv.id = 'game';
     main.append(gameDiv);
 
+    renderBoard(player1, gameDiv);
+    renderBoard(player2, gameDiv);
+  };
+
+  const renderBoard = (player, gameDiv) => {
     const columnLabels = 'ABCDEFGHIJ'.split('');
 
-    /* ================= PLAYER 1 ================= */
+    const playerDiv = document.createElement('div');
+    playerDiv.classList.add('player-div');
 
-    const player1Div = document.createElement('div');
-    player1Div.classList.add('player-div');
+    const board = document.createElement('div');
+    board.classList.add('player-board');
 
-    const player1Board = document.createElement('div');
-    player1Board.classList.add('player-board');
+    // Label row
+    const labelRow = document.createElement('div');
+    labelRow.classList.add('row', 'label-row');
 
-    // Top label row
-    const labelRow1 = document.createElement('div');
-    labelRow1.classList.add('row', 'label-row');
-
-    const corner1 = document.createElement('div');
-    corner1.classList.add('label', 'corner');
-    labelRow1.appendChild(corner1);
+    const corner = document.createElement('div');
+    corner.classList.add('label', 'corner');
+    labelRow.appendChild(corner);
 
     columnLabels.forEach((label) => {
-      const labelCell = document.createElement('div');
-      labelCell.classList.add('label');
-      labelCell.textContent = label;
-      labelRow1.appendChild(labelCell);
+      const cell = document.createElement('div');
+      cell.classList.add('label');
+      cell.textContent = label;
+      labelRow.appendChild(cell);
     });
 
-    player1Board.appendChild(labelRow1);
+    board.appendChild(labelRow);
 
     // Board rows
-    player1.board.board.forEach((row, rowIndex) => {
+    player.board.board.forEach((row, rowIndex) => {
       const rowDiv = document.createElement('div');
       rowDiv.classList.add('row');
 
@@ -76,70 +79,22 @@ const battleship = (() => {
       rowLabel.textContent = rowIndex + 1;
       rowDiv.appendChild(rowLabel);
 
-      row.forEach(() => {
+      row.forEach((_, colIndex) => {
         const cell = document.createElement('div');
         cell.classList.add('column');
+        cell.dataset.row = rowIndex;
+        cell.dataset.col = colIndex;
         rowDiv.appendChild(cell);
       });
 
-      player1Board.appendChild(rowDiv);
+      board.appendChild(rowDiv);
     });
 
-    const player1Identifier = document.createElement('p');
-    player1Identifier.textContent = `${player1.name}'s board`;
+    const identifier = document.createElement('p');
+    identifier.textContent = `${player.name}'s board`;
 
-    player1Div.append(player1Board, player1Identifier);
-    gameDiv.append(player1Div);
-
-    /* ================= PLAYER 2 ================= */
-
-    const player2Div = document.createElement('div');
-    player2Div.classList.add('player-div');
-
-    const player2Board = document.createElement('div');
-    player2Board.classList.add('player-board');
-
-    // Top label row
-    const labelRow2 = document.createElement('div');
-    labelRow2.classList.add('row', 'label-row');
-
-    const corner2 = document.createElement('div');
-    corner2.classList.add('label', 'corner');
-    labelRow2.appendChild(corner2);
-
-    columnLabels.forEach((label) => {
-      const labelCell = document.createElement('div');
-      labelCell.classList.add('label');
-      labelCell.textContent = label;
-      labelRow2.appendChild(labelCell);
-    });
-
-    player2Board.appendChild(labelRow2);
-
-    // Board rows
-    player2.board.board.forEach((row, rowIndex) => {
-      const rowDiv = document.createElement('div');
-      rowDiv.classList.add('row');
-
-      const rowLabel = document.createElement('div');
-      rowLabel.classList.add('label');
-      rowLabel.textContent = rowIndex + 1;
-      rowDiv.appendChild(rowLabel);
-
-      row.forEach(() => {
-        const cell = document.createElement('div');
-        cell.classList.add('column');
-        rowDiv.appendChild(cell);
-      });
-
-      player2Board.appendChild(rowDiv);
-    });
-
-    const player2Identifier = document.createElement('p');
-    player2Identifier.textContent = `${player2.name}'s board`;
-
-    player2Div.append(player2Board, player2Identifier);
-    gameDiv.append(player2Div);
+    playerDiv.append(board, identifier);
+    gameDiv.append(playerDiv);
   };
 
   const playButton = document.querySelector('#play');
