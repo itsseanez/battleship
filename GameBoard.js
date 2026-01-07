@@ -1,6 +1,9 @@
 import Ship from './Ship';
 
 export default class GameBoard {
+  #shipsSunk = [];
+  isGameOver = false;
+
   constructor() {
     this.board = this.#createBoard();
   }
@@ -60,8 +63,10 @@ export default class GameBoard {
       this.board[row][col] = 'x';
       return coordinates;
     } else {
-      let ship = this.board[row][col];
+      const ship = this.board[row][col];
       ship.hit();
+      if (ship.isSunk()) this.#shipsSunk.push(ship);
+      if (this.#shipsSunk.length === 5) this.isGameOver = true;
       return ship;
     }
   };
