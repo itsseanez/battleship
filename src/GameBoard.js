@@ -65,8 +65,10 @@ export default class GameBoard {
     } else {
       const ship = this.board[row][col];
       ship.hit();
-      if (ship.isSunk()) this.#shipsSunk.push(ship);
+      if (ship.isSunk() && !this.#shipsSunk.includes(ship))
+        this.#shipsSunk.push(ship);
       if (this.#shipsSunk.length === 5) this.isGameOver = true;
+      console.log(this.#shipsSunk);
       return ship;
     }
   };

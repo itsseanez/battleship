@@ -5,6 +5,7 @@ const battleship = (() => {
   let playerType = 'computer';
   let playerTwoName = 'Computer';
   let controller;
+  let gameOver = false;
   playerTypeToggle.addEventListener('change', () => {
     const playerDiv = document.querySelector('#player-2');
     if (playerTypeToggle.checked) {
@@ -55,15 +56,15 @@ const battleship = (() => {
     player2.board.placeShip([6, 6], 'horizontal', 3); // Submarine
     player2.board.placeShip([8, 1], 'horizontal', 2); // Destroyer
 
-    renderBoard(player1, controller, gameDiv);
-    renderBoard(player2, controller, gameDiv);
+    renderBoard(player1, player2, controller, gameDiv);
+    renderBoard(player2, player2, controller, gameDiv);
     const playerTurn = document.createElement('p');
     playerTurn.textContent = `${controller.switchPlayer().name}'s turn`;
     playerTurn.id = 'player-turn';
     main.append(playerTurn);
   };
 
-  const renderBoard = (player, controller, gameDiv) => {
+  const renderBoard = (player, opponent, controller, gameDiv) => {
     const main = document.querySelector('main');
     const columnLabels = 'ABCDEFGHIJ'.split('');
 
@@ -99,12 +100,12 @@ const battleship = (() => {
       rowLabel.classList.add('label');
       rowLabel.textContent = rowIndex + 1;
       rowDiv.appendChild(rowLabel);
-
       row.forEach((element, colIndex) => {
         const cell = document.createElement('div');
         if (
           element !== null &&
           typeof element === 'object' &&
+          opponent.type !== 'real' &&
           player.type !== 'computer'
         )
           cell.classList.add('ship');
@@ -114,22 +115,35 @@ const battleship = (() => {
         cell.dataset.player = player.name;
 
         cell.addEventListener('click', () => {
+          if (gameOver) return;
           if (controller.getCurrentPlayer().name === player.name) return;
-          if (
-            player.board.board[cell.dataset.row][cell.dataset.col] != null &&
-            typeof player.board.board[cell.dataset.row][cell.dataset.col] ===
-              'object' &&
-            controller.getCurrentPlayer().name != player.name
-          ) {
-            cell.classList.add('hit');
-          } else {
-            controller.switchPlayer();
+          const result = player.board.receiveAttack([
+            Number(cell.dataset.row),
+            Number(cell.dataset.col),
+          ]);
+
+          if (Array.isArray(result)) {
+            // MISS
             cell.classList.add('miss');
+
+            controller.switchPlayer();
+
             const playerTurn = document.querySelector('#player-turn');
             playerTurn.textContent = `${controller.getCurrentPlayer().name}'s turn`;
-            main.append(playerTurn);
+          } else {
+            // HIT
+            cell.classList.add('hit');
+            cell.classList.remove('ship');
+
+            if (player.board.isGameOver) {
+              gameOver = true;
+              const playerTurn = document.querySelector('#player-turn');
+              playerTurn.textContent = `${controller.getCurrentPlayer().name} won`;
+              return;
+            }
           }
         });
+
         rowDiv.appendChild(cell);
       });
 
