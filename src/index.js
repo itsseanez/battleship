@@ -4,6 +4,7 @@ const battleship = (() => {
   const playerTypeToggle = document.querySelector('#cb2-7');
   let playerType = 'computer';
   let playerTwoName = 'Computer';
+  let controller;
   playerTypeToggle.addEventListener('change', () => {
     const playerDiv = document.querySelector('#player-2');
     if (playerTypeToggle.checked) {
@@ -31,6 +32,7 @@ const battleship = (() => {
     }
 
     const player2 = new Player(playerTwoName, playerType);
+    controller = gameController(player1, player2);
 
     const main = document.querySelector('main');
     main.innerHTML = '';
@@ -39,11 +41,28 @@ const battleship = (() => {
     gameDiv.id = 'game';
     main.append(gameDiv);
 
-    renderBoard(player1, gameDiv);
-    renderBoard(player2, gameDiv);
+    // Player 1 test placement
+    player1.board.placeShip([0, 0], 'horizontal', 5); // Carrier
+    player1.board.placeShip([2, 1], 'vertical', 4); // Battleship
+    player1.board.placeShip([5, 3], 'horizontal', 3); // Cruiser
+    player1.board.placeShip([7, 0], 'horizontal', 3); // Submarine
+    player1.board.placeShip([9, 5], 'horizontal', 2); // Destroyer
+
+    // Player 2 test placement
+    player2.board.placeShip([0, 5], 'horizontal', 5); // Carrier
+    player2.board.placeShip([1, 8], 'vertical', 4); // Battleship
+    player2.board.placeShip([4, 2], 'vertical', 3); // Cruiser
+    player2.board.placeShip([6, 6], 'horizontal', 3); // Submarine
+    player2.board.placeShip([8, 1], 'horizontal', 2); // Destroyer
+
+    renderBoard(player1, controller, gameDiv);
+    renderBoard(player2, controller, gameDiv);
+    const playerTurn = document.createElement('p');
+    playerTurn.textContent = `${controller.switchPlayer().name}'s turn`;
+    main.append(playerTurn);
   };
 
-  const renderBoard = (player, gameDiv) => {
+  const renderBoard = (player, controller, gameDiv) => {
     const columnLabels = 'ABCDEFGHIJ'.split('');
 
     const playerDiv = document.createElement('div');
@@ -79,11 +98,28 @@ const battleship = (() => {
       rowLabel.textContent = rowIndex + 1;
       rowDiv.appendChild(rowLabel);
 
-      row.forEach((_, colIndex) => {
+      row.forEach((element, colIndex) => {
         const cell = document.createElement('div');
+        if (
+          element !== null &&
+          typeof element === 'object' &&
+          player.type !== 'computer'
+        )
+          cell.classList.add('ship');
         cell.classList.add('column');
         cell.dataset.row = rowIndex;
         cell.dataset.col = colIndex;
+        cell.dataset.player = player.name;
+
+        cell.addEventListener('click', () => {
+          //if (controller.switchPlayer().name !== cell.dataset.player) return;
+          if (player.board.board[cell.dataset.row][cell.dataset.col] != null)
+            cell.classList.add('hit');
+          else {
+            console.log(player.board.board[cell.dataset.row][cell.dataset.col]);
+            cell.classList.add('miss');
+          }
+        });
         rowDiv.appendChild(cell);
       });
 
@@ -97,6 +133,21 @@ const battleship = (() => {
     gameDiv.append(playerDiv);
   };
 
+  //Start game
   const playButton = document.querySelector('#play');
   playButton.addEventListener('click', startGame);
+
+  const gameController = (player1, player2) => {
+    let currentPlayer = player2;
+    let opponent = player1;
+
+    const switchPlayer = () => {
+      return (currentPlayer = currentPlayer === player1 ? player2 : player1);
+    };
+    const getCurrentPlayer = () => currentPlayer;
+    const getOpponent = () => opponent;
+    console.log(currentPlayer);
+
+    return { switchPlayer, getCurrentPlayer, getOpponent };
+  };
 })();

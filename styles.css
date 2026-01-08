@@ -176,6 +176,10 @@ header {
   justify-content: center;
 }
 
+.hit {
+  background-color: green;
+}
+
 .input-flex {
   display: flex;
   gap: 5px;
@@ -199,7 +203,12 @@ main {
   padding: 3%;
   height: 90vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.miss {
+  background-color: red;
 }
 
 .player-board {
@@ -207,7 +216,6 @@ main {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  gap: 5px;
   aspect-ratio: 1/1;
   width: 100%;
   max-width: 40vw;
@@ -232,10 +240,13 @@ main {
 
 .row {
   display: flex;
-  gap: 5px;
   flex: 1;
 }
 
 .row .label {
   border: none;
+}
+
+.ship {
+  background-color: var(--auxillary-color);
 }
