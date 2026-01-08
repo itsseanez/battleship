@@ -59,10 +59,12 @@ const battleship = (() => {
     renderBoard(player2, controller, gameDiv);
     const playerTurn = document.createElement('p');
     playerTurn.textContent = `${controller.switchPlayer().name}'s turn`;
+    playerTurn.id = 'player-turn';
     main.append(playerTurn);
   };
 
   const renderBoard = (player, controller, gameDiv) => {
+    const main = document.querySelector('main');
     const columnLabels = 'ABCDEFGHIJ'.split('');
 
     const playerDiv = document.createElement('div');
@@ -112,12 +114,20 @@ const battleship = (() => {
         cell.dataset.player = player.name;
 
         cell.addEventListener('click', () => {
-          //if (controller.switchPlayer().name !== cell.dataset.player) return;
-          if (player.board.board[cell.dataset.row][cell.dataset.col] != null)
+          if (controller.getCurrentPlayer().name === player.name) return;
+          if (
+            player.board.board[cell.dataset.row][cell.dataset.col] != null &&
+            typeof player.board.board[cell.dataset.row][cell.dataset.col] ===
+              'object' &&
+            controller.getCurrentPlayer().name != player.name
+          ) {
             cell.classList.add('hit');
-          else {
-            console.log(player.board.board[cell.dataset.row][cell.dataset.col]);
+          } else {
+            controller.switchPlayer();
             cell.classList.add('miss');
+            const playerTurn = document.querySelector('#player-turn');
+            playerTurn.textContent = `${controller.getCurrentPlayer().name}'s turn`;
+            main.append(playerTurn);
           }
         });
         rowDiv.appendChild(cell);
