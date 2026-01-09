@@ -56,15 +56,15 @@ const battleship = (() => {
     player2.board.placeShip([6, 6], 'horizontal', 3); // Submarine
     player2.board.placeShip([8, 1], 'horizontal', 2); // Destroyer
 
-    renderBoard(player1, player2, controller, gameDiv);
-    renderBoard(player2, player2, controller, gameDiv);
+    renderBoard(player1, player1, player2, controller, gameDiv);
+    renderBoard(player2, player1, player2, controller, gameDiv);
     const playerTurn = document.createElement('p');
     playerTurn.textContent = `${controller.switchPlayer().name}'s turn`;
     playerTurn.id = 'player-turn';
     main.append(playerTurn);
   };
 
-  const renderBoard = (player, opponent, controller, gameDiv) => {
+  const renderBoard = (player, mainPlayer, opponent, controller, gameDiv) => {
     const main = document.querySelector('main');
     const columnLabels = 'ABCDEFGHIJ'.split('');
 
@@ -115,6 +115,8 @@ const battleship = (() => {
         cell.dataset.player = player.name;
 
         cell.addEventListener('click', () => {
+          if (cell.classList.contains('hit') || cell.classList.contains('miss'))
+            return;
           if (gameOver) return;
           if (controller.getCurrentPlayer().name === player.name) return;
           const result = player.board.receiveAttack([
@@ -128,8 +130,61 @@ const battleship = (() => {
 
             controller.switchPlayer();
 
-            const playerTurn = document.querySelector('#player-turn');
-            playerTurn.textContent = `${controller.getCurrentPlayer().name}'s turn`;
+            //Computer logic
+            if (controller.getCurrentPlayer().type === 'computer') {
+              let playerBoard = document.querySelector('.player-board');
+
+              while (true) {
+                let computerChoice = [
+                  Math.floor(Math.random() * 10),
+                  Math.floor(Math.random() * 10),
+                ];
+
+                const cell = playerBoard.querySelector(
+                  `.column[data-row="${computerChoice[0]}"][data-col="${computerChoice[1]}"]`
+                );
+
+                // Original board check
+                if (
+                  mainPlayer.board.board[computerChoice[0]][
+                    computerChoice[1]
+                  ] === null ||
+                  typeof mainPlayer.board.board[computerChoice[0]][
+                    computerChoice[1]
+                  ] === 'object'
+                ) {
+                  // Additional class-based check
+                  if (!cell.classList.contains('hit')) {
+                    const result =
+                      mainPlayer.board.receiveAttack(computerChoice);
+
+                    if (Array.isArray(result)) {
+                      // MISS
+                      cell.classList.add('miss');
+                      controller.switchPlayer();
+                      const playerTurn = document.querySelector('#player-turn');
+                      playerTurn.textContent = `${controller.getCurrentPlayer().name}'s turn`;
+                      return;
+                    } else {
+                      // HIT
+                      cell.classList.add('hit');
+                      cell.classList.remove('ship');
+
+                      if (mainPlayer.board.isGameOver) {
+                        gameOver = true;
+                        const playerTurn =
+                          document.querySelector('#player-turn');
+                        playerTurn.textContent = `${controller.getCurrentPlayer().name} won`;
+                        return;
+                      }
+                    }
+                  }
+                }
+              }
+            } else {
+              const playerTurn = document.querySelector('#player-turn');
+              playerTurn.textContent = `${controller.getCurrentPlayer().name}'s turn`;
+            }
           } else {
             // HIT
             cell.classList.add('hit');
@@ -163,15 +218,12 @@ const battleship = (() => {
 
   const gameController = (player1, player2) => {
     let currentPlayer = player2;
-    let opponent = player1;
 
     const switchPlayer = () => {
       return (currentPlayer = currentPlayer === player1 ? player2 : player1);
     };
     const getCurrentPlayer = () => currentPlayer;
-    const getOpponent = () => opponent;
-    console.log(currentPlayer);
 
-    return { switchPlayer, getCurrentPlayer, getOpponent };
+    return { switchPlayer, getCurrentPlayer };
   };
 })();

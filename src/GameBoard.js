@@ -68,7 +68,6 @@ export default class GameBoard {
       if (ship.isSunk() && !this.#shipsSunk.includes(ship))
         this.#shipsSunk.push(ship);
       if (this.#shipsSunk.length === 5) this.isGameOver = true;
-      console.log(this.#shipsSunk);
       return ship;
     }
   };
