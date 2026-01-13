@@ -23,7 +23,33 @@ const battleship = (() => {
     }
   });
 
-  const startGame = () => {
+  const startGame = (player1, player2, controller) => {
+    const main = document.querySelector('main');
+    main.innerHTML = '';
+
+    const gameDiv = document.createElement('div');
+    gameDiv.id = 'game';
+    main.append(gameDiv);
+
+    renderBoard(player1, player1, player2, controller, gameDiv);
+    renderBoard(player2, player1, player2, controller, gameDiv);
+    const playerTurn = document.createElement('p');
+    playerTurn.textContent = `${controller.switchPlayer().name}'s turn`;
+    playerTurn.id = 'player-turn';
+    main.append(playerTurn);
+  };
+
+  const placeShips = () => {
+    const parseCoordinate = (input) => {
+      const colLetter = input[0].toUpperCase();
+      const rowNumber = Number(input.slice(1));
+
+      const col = colLetter.charCodeAt(0) - 65; // A → 0
+      const row = rowNumber - 1; // 1 → 0
+
+      return [row, col];
+    };
+
     const player1 = new Player(
       document.querySelector('#player-1-name').value.trim()
     );
@@ -35,33 +61,60 @@ const battleship = (() => {
     const player2 = new Player(playerTwoName, playerType);
     controller = gameController(player1, player2);
 
-    const main = document.querySelector('main');
-    main.innerHTML = '';
+    const player1ShipDialog = document.querySelector('dialog');
+    player1ShipDialog.showModal();
 
-    const gameDiv = document.createElement('div');
-    gameDiv.id = 'game';
-    main.append(gameDiv);
+    document
+      .getElementById('close-dialog-btn')
+      .addEventListener('click', () => {
+        player1ShipDialog.close();
+      });
 
-    // Player 1 test placement
-    player1.board.placeShip([0, 0], 'horizontal', 5); // Carrier
-    player1.board.placeShip([2, 1], 'vertical', 4); // Battleship
-    player1.board.placeShip([5, 3], 'horizontal', 3); // Cruiser
-    player1.board.placeShip([7, 0], 'horizontal', 3); // Submarine
-    player1.board.placeShip([9, 5], 'horizontal', 2); // Destroyer
+    const shipsToPlace = [
+      { name: 'Carrier', length: 5 },
+      { name: 'Battleship', length: 4 },
+      { name: 'Cruiser', length: 3 },
+      { name: 'Submarine', length: 3 },
+      { name: 'Destroyer', length: 2 },
+    ];
 
-    // Player 2 test placement
-    player2.board.placeShip([0, 5], 'horizontal', 5); // Carrier
-    player2.board.placeShip([1, 8], 'vertical', 4); // Battleship
-    player2.board.placeShip([4, 2], 'vertical', 3); // Cruiser
-    player2.board.placeShip([6, 6], 'horizontal', 3); // Submarine
-    player2.board.placeShip([8, 1], 'horizontal', 2); // Destroyer
+    let currentShipIndex = 0;
 
-    renderBoard(player1, player1, player2, controller, gameDiv);
-    renderBoard(player2, player1, player2, controller, gameDiv);
-    const playerTurn = document.createElement('p');
-    playerTurn.textContent = `${controller.switchPlayer().name}'s turn`;
-    playerTurn.id = 'player-turn';
-    main.append(playerTurn);
+    const updateDialogForCurrentShip = () => {
+      const currentShip = shipsToPlace[currentShipIndex];
+      const dialogTitle = document.querySelector('#dialog-title');
+      dialogTitle.textContent = `Place your ${currentShip.name} (${currentShip.length})`;
+    };
+
+    const placeShip = document.querySelector('#confirm-placement');
+    placeShip.addEventListener('click', (e) => {
+      e.preventDefault();
+      const currentShip = shipsToPlace[currentShipIndex];
+
+      const col = document.querySelector('#column').value;
+      const row = Number(document.querySelector('#row').value);
+      const alignment = document.querySelector('#orientation').value;
+
+      const start = parseCoordinate([col, row]);
+      console.log(start, alignment, currentShip.length);
+      try {
+        player1.board.placeShip(start, alignment, currentShip.length);
+      } catch (e) {
+        const errorCode = document.querySelector('#placement-error');
+        errorCode.hidden = false;
+        errorCode.textContent = e.message;
+        return;
+      }
+
+      currentShipIndex++;
+
+      if (shipsToPlace.length <= currentShipIndex) {
+        player1ShipDialog.close();
+        startGame(player1, player2, controller);
+      } else {
+        updateDialogForCurrentShip();
+      }
+    });
   };
 
   const renderBoard = (player, mainPlayer, opponent, controller, gameDiv) => {
@@ -214,7 +267,7 @@ const battleship = (() => {
 
   //Start game
   const playButton = document.querySelector('#play');
-  playButton.addEventListener('click', startGame);
+  playButton.addEventListener('click', placeShips);
 
   const gameController = (player1, player2) => {
     let currentPlayer = player2;

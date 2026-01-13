@@ -27,6 +27,54 @@
         <div id="player-2" class="input-flex"></div>
         <button id="play">PLAY</button>
       </div>
+      <dialog id="ship-dialog">
+        <form method="dialog" id="ship-form">
+          <h2 id="dialog-title">Place Your Carrier (5)</h2>
+          <!-- Orientation -->
+          <label>
+            Orientation
+            <select id="orientation">
+              <option value="horizontal">Horizontal</option>
+              <option value="vertical">Vertical</option>
+            </select>
+          </label>
+
+          <!-- Starting position -->
+          <fieldset>
+            <legend>Starting Position</legend>
+
+            <label>
+              Column
+              <select id="column">
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+                <option>D</option>
+                <option>E</option>
+                <option>F</option>
+                <option>G</option>
+                <option>H</option>
+                <option>I</option>
+                <option>J</option>
+              </select>
+            </label>
+
+            <label>
+              Row
+              <input id="row" type="number" min="1" max="10" required />
+            </label>
+          </fieldset>
+
+          <!-- Errors -->
+          <p id="placement-error" hidden></p>
+
+          <!-- Actions -->
+          <menu>
+            <button id="close-dialog-btn" type="button">Cancel</button>
+            <button id="confirm-placement" value="default">Place Ship</button>
+          </menu>
+        </form>
+      </dialog>
     </main>
     <script type="module" src="./src/index.js"></script>
   </body>
