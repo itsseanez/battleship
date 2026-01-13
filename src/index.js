@@ -43,13 +43,12 @@ const battleship = (() => {
     const parseCoordinate = (input) => {
       const colLetter = input[0].toUpperCase();
       const rowNumber = Number(input.slice(1));
-
-      const col = colLetter.charCodeAt(0) - 65; // A → 0
-      const row = rowNumber - 1; // 1 → 0
-
+      const col = colLetter.charCodeAt(0) - 65;
+      const row = rowNumber - 1;
       return [row, col];
     };
 
+    // 🔹 Create players
     const player1 = new Player(
       document.querySelector('#player-1-name').value.trim()
     );
@@ -59,17 +58,30 @@ const battleship = (() => {
     }
 
     const player2 = new Player(playerTwoName, playerType);
-    controller = gameController(player1, player2);
+    const controller = gameController(player1, player2);
 
-    const player1ShipDialog = document.querySelector('dialog');
-    player1ShipDialog.showModal();
+    // 🔹 Player 1 placement
+    const player1Dialog = document.querySelector('#ship-dialog');
+    player1Dialog.showModal();
 
-    document
-      .getElementById('close-dialog-btn')
-      .addEventListener('click', () => {
-        player1ShipDialog.close();
-      });
+    placeShipsForPlayer(player1, player1Dialog, parseCoordinate, () => {
+      // 🔹 After Player 1 finishes placing ships
+      if (player2.type === 'real') {
+        const player2Dialog = createPlayer2ShipDialog();
+        document.body.appendChild(player2Dialog);
+        player2Dialog.showModal();
 
+        placeShipsForPlayer(player2, player2Dialog, parseCoordinate, () => {
+          startGame(player1, player2, controller);
+        });
+      } else {
+        autoPlaceShips(player2);
+        startGame(player1, player2, controller);
+      }
+    });
+  };
+
+  const placeShipsForPlayer = (player, dialog, parseCoordinate, onComplete) => {
     const shipsToPlace = [
       { name: 'Carrier', length: 5 },
       { name: 'Battleship', length: 4 },
@@ -80,41 +92,175 @@ const battleship = (() => {
 
     let currentShipIndex = 0;
 
-    const updateDialogForCurrentShip = () => {
-      const currentShip = shipsToPlace[currentShipIndex];
-      const dialogTitle = document.querySelector('#dialog-title');
-      dialogTitle.textContent = `Place your ${currentShip.name} (${currentShip.length})`;
+    const updateDialog = () => {
+      const ship = shipsToPlace[currentShipIndex];
+      dialog.querySelector('h2').textContent =
+        `Place your ${ship.name} (${ship.length})`;
     };
 
-    const placeShip = document.querySelector('#confirm-placement');
-    placeShip.addEventListener('click', (e) => {
+    updateDialog();
+
+    const confirmBtn = dialog.querySelector('button[value="default"]');
+    const errorMsg = dialog.querySelector('p');
+
+    document
+      .getElementById('close-dialog-btn')
+      .addEventListener('click', () => {
+        window.location.reload();
+      });
+
+    confirmBtn.onclick = (e) => {
       e.preventDefault();
-      const currentShip = shipsToPlace[currentShipIndex];
 
-      const col = document.querySelector('#column').value;
-      const row = Number(document.querySelector('#row').value);
-      const alignment = document.querySelector('#orientation').value;
+      const col = dialog.querySelector('select[id^="column"]').value;
+      const row = Number(dialog.querySelector('input[id^="row"]').value);
+      const alignment = dialog.querySelector('select[id^="orientation"]').value;
 
-      const start = parseCoordinate([col, row]);
-      console.log(start, alignment, currentShip.length);
+      const start = parseCoordinate(col + row);
+
       try {
-        player1.board.placeShip(start, alignment, currentShip.length);
-      } catch (e) {
-        const errorCode = document.querySelector('#placement-error');
-        errorCode.hidden = false;
-        errorCode.textContent = e.message;
+        player.board.placeShip(
+          start,
+          alignment,
+          shipsToPlace[currentShipIndex].length
+        );
+      } catch (err) {
+        errorMsg.hidden = false;
+        errorMsg.textContent = err.message;
         return;
       }
 
+      errorMsg.hidden = true;
       currentShipIndex++;
 
-      if (shipsToPlace.length <= currentShipIndex) {
-        player1ShipDialog.close();
-        startGame(player1, player2, controller);
-      } else {
-        updateDialogForCurrentShip();
+      if (currentShipIndex >= shipsToPlace.length) {
+        dialog.close();
+        dialog.remove();
+        onComplete();
+        return;
+      }
+
+      updateDialog();
+    };
+  };
+
+  const autoPlaceShips = (player) => {
+    const ships = [
+      { length: 5 },
+      { length: 4 },
+      { length: 3 },
+      { length: 3 },
+      { length: 2 },
+    ];
+
+    ships.forEach(({ length }) => {
+      while (true) {
+        const row = Math.floor(Math.random() * 10);
+        const col = Math.floor(Math.random() * 10);
+        const orientation = Math.random() > 0.5 ? 'horizontal' : 'vertical';
+
+        try {
+          player.board.placeShip([row, col], orientation, length);
+          break;
+        } catch {
+          continue;
+        }
       }
     });
+  };
+
+  const createPlayer2ShipDialog = () => {
+    const dialog = document.createElement('dialog');
+    dialog.id = 'ship-dialog-player2';
+
+    const form = document.createElement('form');
+    form.method = 'dialog';
+    form.id = 'ship-form-player2';
+
+    // Title
+    const title = document.createElement('h2');
+    title.id = 'dialog-title-player2';
+    title.textContent = 'Place Your Carrier (5)';
+
+    // Orientation
+    const orientationLabel = document.createElement('label');
+    orientationLabel.textContent = 'Orientation';
+
+    const orientationSelect = document.createElement('select');
+    orientationSelect.id = 'orientation-player2';
+
+    ['horizontal', 'vertical'].forEach((value) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value[0].toUpperCase() + value.slice(1);
+      orientationSelect.appendChild(option);
+    });
+
+    orientationLabel.appendChild(orientationSelect);
+
+    // Fieldset
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = 'Starting Position';
+
+    // Column
+    const columnLabel = document.createElement('label');
+    columnLabel.textContent = 'Column';
+
+    const columnSelect = document.createElement('select');
+    columnSelect.id = 'column-player2';
+
+    'ABCDEFGHIJ'.split('').forEach((letter) => {
+      const option = document.createElement('option');
+      option.textContent = letter;
+      columnSelect.appendChild(option);
+    });
+
+    columnLabel.appendChild(columnSelect);
+
+    // Row
+    const rowLabel = document.createElement('label');
+    rowLabel.textContent = 'Row';
+
+    const rowInput = document.createElement('input');
+    rowInput.id = 'row-player2';
+    rowInput.type = 'number';
+    rowInput.min = 1;
+    rowInput.max = 10;
+    rowInput.required = true;
+
+    rowLabel.appendChild(rowInput);
+
+    fieldset.append(legend, columnLabel, rowLabel);
+
+    // Error message
+    const errorMsg = document.createElement('p');
+    errorMsg.id = 'placement-error-player2';
+    errorMsg.hidden = true;
+
+    // Menu / buttons
+    const menu = document.createElement('menu');
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.id = 'close-dialog-btn';
+    cancelBtn.textContent = 'Cancel';
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.id = 'confirm-placement-player2';
+    confirmBtn.value = 'default';
+    confirmBtn.textContent = 'Place Ship';
+
+    menu.append(cancelBtn, confirmBtn);
+
+    // Assemble form
+    form.append(title, orientationLabel, fieldset, errorMsg, menu);
+
+    dialog.appendChild(form);
+
+    document.body.appendChild(dialog);
+
+    return dialog;
   };
 
   const renderBoard = (player, mainPlayer, opponent, controller, gameDiv) => {
